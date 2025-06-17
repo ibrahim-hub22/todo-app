@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TodoForm from "../components/TodoForm";
 import DeleteModal from "../components/DeleteModal";
+import { X, SquarePen, Trash2, Plus, Check } from "lucide-react";
 
 export default function TodoListPage() {
   const [page, setPage] = useState(1);
@@ -106,14 +107,15 @@ export default function TodoListPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Todo List</h1>
-
-      <button
-        onClick={() => setIsCreating(true)}
-        className="mb-4 px-4 py-2 bg-green-600 text-white rounded"
-      >
-        + Add Todo
-      </button>
+      <h1 className="text-3xl font-bold mb-4 text-center">Ibrahim's Todos</h1>
+      <div className="flex w-full justify-end">
+        <button
+          onClick={() => setIsCreating(true)}
+          className=" flex justify-end mb-4 px-4 py-2 bg-green-600 text-white rounded flex gap-1 hover:bg-green-800 hover:scale-90 transition-all duration-300 ease-in"
+        >
+          <Plus /> Add Todo
+        </button>
+      </div>
 
       {isCreating && (
         <div className="mb-6 border p-4 rounded shadow">
@@ -135,7 +137,7 @@ export default function TodoListPage() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="w-full md:w-1/2 px-3 py-2 border rounded"
+          className="w-full md:w-1/2 px-3 py-2 border rounded flex-1"
         />
 
         <select
@@ -144,7 +146,7 @@ export default function TodoListPage() {
             setStatus(e.target.value);
             setPage(1);
           }}
-          className="w-full md:w-1/3 px-3 py-2 border rounded"
+          className="w-full md:w-1/3 px-3 py-2 border rounded flex-1"
         >
           <option value="all">All</option>
           <option value="completed">Completed</option>
@@ -171,32 +173,46 @@ export default function TodoListPage() {
         {currentTodos.map((todo) => (
           <li
             key={todo.id}
-            className="border p-4 rounded shadow hover:shadow-md transition w-100"
+            className={`border p-4 rounded shadow hover:shadow-md transition ${
+              todo.completed
+                ? "bg-green-100 text-green-800 border-green-200 border p-4 rounded shadow hover:shadow-md transition w-full"
+                : "bg-yellow-100 text-yellow-800 border-yellow-200 border p-4 rounded shadow hover:shadow-md transition w-full"
+            }`}
           >
-            <div className="flex justify-between ">
+            <div className="flex justify-between">
               <Link
                 to={`/todos/${todo.id}`}
-                className="block text-lg font-medium text-blue-600 hover:underline flex-1"
+                className="block text-lg font-medium hover:underline flex-1"
               >
                 {todo.title}
               </Link>
               <div className="flex gap-3">
                 <button
-                  className="mt-2 text-sm text-blue-600 hover:underline"
+                  className="mt-2 text-sm hover:underline"
                   onClick={() => setEditingTodo(todo)}
                 >
-                  ✏️ Edit
+                  <SquarePen />
                 </button>
                 <button
                   onClick={() => setTodoToDelete(todo)}
                   className="mt-2 text-sm text-red-600 hover:underline"
                 >
-                  Delete
+                  <Trash2 />
                 </button>
               </div>
             </div>
-            <p className="text-sm text-gray-600">
-              {todo.completed ? "✅ Completed" : "❌ Not completed"}
+            <p className="text-sm text-gray-600 flex gap-1 items-center ">
+              {todo.completed ? (
+                <>
+                  <Check className="inline w-4 h-full text-green-500" />
+                  <p> Completed</p>
+                </>
+              ) : (
+                <>
+                  <X className="inline w-4 h-full text-red-500" />{" "}
+                  <p> Not completed</p>
+                </>
+              )}
             </p>
           </li>
         ))}

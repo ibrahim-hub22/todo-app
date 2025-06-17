@@ -16,14 +16,14 @@ A comprehensive Todo application built with React, demonstrating API integration
 
 ## 📸 Screenshots
 
-![Todo List Screenshot](./public/screenshot.png) <!-- replace with actual path -->
+![Todo List Screenshot](./public/app-img.png) <!-- replace with actual path -->
 > *Add a few screenshots or GIFs showing key features like Add, Edit, Delete, and Search*
 
 ---
 
 ## 🚀 Live Demo
 
-🔗 [View the app live on Vercel/Netlify](https://your-live-url.vercel.app)
+🔗 [View the app live on Vercel/Netlify](https://jelly-todo.netlify.app/)
 
 ---
 
