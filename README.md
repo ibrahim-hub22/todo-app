@@ -43,3 +43,40 @@ A comprehensive Todo application built with React, demonstrating API integration
 
 ## 🧭 Project Structure
 
+todo-app/
+├── public/
+│ └── index.html
+├── src/
+│ ├── api/
+│ │ └── todos.js
+│ ├── components/
+│ │ ├── TodoForm.jsx
+│ │ ├── DeleteModal.jsx
+│ │ ├── EditModal.jsx
+│ │ └── ErrorBoundary.jsx
+│ ├── pages/
+│ │ ├── TodoListPage.jsx
+│ │ ├── TodoDetailPage.jsx
+│ │ └── NotFoundPage.jsx
+│ ├── App.jsx
+│ ├── main.jsx
+│ └── index.css
+├── .gitignore
+├── package.json
+├── README.md
+└── vite.config.js
+
+---
+
+## 🧪 Available Scripts
+
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview built site locally
+npm run preview
+
