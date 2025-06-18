@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TodoForm from "../components/TodoForm";
 import DeleteModal from "../components/DeleteModal";
 import { X, SquarePen, Trash2, Plus, Check } from "lucide-react";
+import { getCachedTodos, setCachedTodos } from "../utils/localCache";
 
 export default function TodoListPage() {
   const [page, setPage] = useState(1);
@@ -26,28 +27,40 @@ export default function TodoListPage() {
   } = useQuery({
     queryKey: ["todos"],
     queryFn: async () => {
+      const cached = await getCachedTodos();
+      if (cached) return cached;
+
       const res = await axios.get("https://jsonplaceholder.typicode.com/todos");
-      return res.data;
+      const data = res.data.slice(0, 50); // For performance
+      await setCachedTodos(data);
+      return data;
     },
   });
-
   const createTodoMutation = useMutation({
     mutationFn: async (newTodo) => {
-      const res = await axios.post(
-        "https://jsonplaceholder.typicode.com/todos",
-        {
-          ...newTodo,
-          userId: 1,
-        }
-      );
-      return res.data;
+      const todoWithMeta = {
+        ...newTodo,
+        id: Date.now(), // use timestamp as unique fake ID
+        isLocal: true,
+        userId: 1,
+      };
+
+      // Optionally save to localStorage/localForage here
+      const cached = (await getCachedTodos()) || [];
+      await setCachedTodos([...cached, todoWithMeta]);
+
+      return todoWithMeta;
     },
-    onSuccess: (newTodo) => {
-      // Add the new todo manually to the cached list
-      queryClient.setQueryData(["todos"], (old = []) => [
-        { ...newTodo, id: Date.now(), completed: false }, // simulate a unique ID and completed flag
-        ...old,
-      ]);
+    onSuccess: async (newTodo) => {
+      const prevTodos = await getCachedTodos();
+      const updated = [newTodo, ...(prevTodos || [])];
+      await setCachedTodos(updated);
+
+      queryClient.invalidateQueries(["todos"]);
+      setIsCreating(false);
+    },
+    onError: (error) => {
+      console.error("Error creating todo:", error);
       setIsCreating(false);
     },
   });
@@ -60,10 +73,16 @@ export default function TodoListPage() {
       );
       return res.data;
     },
-    onSuccess: (updated) => {
-      queryClient.setQueryData(["todos"], (old = []) =>
-        old.map((todo) => (todo.id === updated.id ? updated : todo))
+    onSuccess: async (updatedTodo) => {
+      const cached = await getCachedTodos();
+      const newTodos = (cached || []).map((todo) =>
+        todo.id === updatedTodo.id ? updatedTodo : todo
       );
+      await setCachedTodos(newTodos);
+      queryClient.invalidateQueries(["todos"]);
+    },
+    onError: (error) => {
+      console.error("Error updating todo:", error);
       setEditingTodo(null);
     },
   });
@@ -73,8 +92,14 @@ export default function TodoListPage() {
       await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
       return id;
     },
-    onSuccess: () => {
+    onSuccess: async (deletedId) => {
+      const cached = await getCachedTodos();
+      const remaining = (cached || []).filter((todo) => todo.id !== deletedId);
+      await setCachedTodos(remaining);
       queryClient.invalidateQueries(["todos"]);
+    },
+    onError: (error) => {
+      console.error("Error deleting todo:", error);
       setTodoToDelete(null);
     },
   });
@@ -118,13 +143,25 @@ export default function TodoListPage() {
       </div>
 
       {isCreating && (
-        <div className="mb-6 border p-4 rounded shadow">
-          <h2 className="text-lg font-semibold mb-2">Create New Todo</h2>
-          <TodoForm
-            onSubmit={(data) => createTodoMutation.mutate(data)}
-            onCancel={() => setIsCreating(false)}
+        <>
+          <div
+            className="fixed inset-0 bg-black opacity-30 backdrop-blur-lg z-40"
+            onClick={() => setIsCreating(false)}
           />
-        </div>
+
+          <div className="fixed inset-0 flex justify-center items-center z-50">
+            <div
+              className="bg-white p-6 rounded-lg shadow max-w-md w-full relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg font-semibold mb-2">Create New Todo</h2>
+              <TodoForm
+                onSubmit={(data) => createTodoMutation.mutate(data)}
+                onCancel={() => setIsCreating(false)}
+              />
+            </div>
+          </div>
+        </>
       )}
 
       {/* 🔍 Search & Filter Controls */}
@@ -157,18 +194,23 @@ export default function TodoListPage() {
       {/* 📝 Todo Items */}
       <ul className="space-y-4 mb-6">
         {editingTodo && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-              <h2 className="text-lg font-semibold mb-2">Edit Todo</h2>
-              <TodoForm
-                initialData={editingTodo}
-                onSubmit={(data) => {
-                  updateTodoMutation.mutate(data);
-                }}
-                onCancel={() => setEditingTodo(null)}
-              />
+          <>
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black opacity-30 backdrop-blur-lg z-40"></div>
+            {/* Modal */}
+            <div className="fixed inset-0 flex justify-center items-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
+                <h2 className="text-lg font-semibold mb-2">Edit Todo</h2>
+                <TodoForm
+                  initialData={editingTodo}
+                  onSubmit={(data) => {
+                    updateTodoMutation.mutate(data);
+                  }}
+                  onCancel={() => setEditingTodo(null)}
+                />
+              </div>
             </div>
-          </div>
+          </>
         )}
         {currentTodos.map((todo) => (
           <li

@@ -1,4 +1,3 @@
-// src/components/TodoList.jsx
 import TodoItem from "./TodoItem";
 
 export default function TodoList({ todos, toggleComplete, deleteTodo }) {
