@@ -43,24 +43,27 @@ A comprehensive Todo application built with React, demonstrating API integration
 
 ## 🧭 Project Structure
 
+```plaintext
 todo-app/
 ├── public/
-│ └── index.html
+│   └── index.html
 ├── src/
-│ ├── api/
-│ │ └── todos.js
-│ ├── components/
-│ │ ├── TodoForm.jsx
-│ │ ├── DeleteModal.jsx
-│ │ ├── EditModal.jsx
-│ │ └── ErrorBoundary.jsx
-│ ├── pages/
-│ │ ├── TodoListPage.jsx
-│ │ ├── TodoDetailPage.jsx
-│ │ └── NotFoundPage.jsx
-│ ├── App.jsx
-│ ├── main.jsx
-│ └── index.css
+│   ├── api/
+│   │   └── todos.js
+│   ├── components/
+│   │   ├── TodoForm.jsx
+│   │   ├── DeleteModal.jsx
+│   │   ├── EditModal.jsx
+│   │   └── ErrorBoundary.jsx
+│   ├── pages/
+│   │   ├── TodoListPage.jsx
+│   │   ├── TodoDetailPage.jsx
+│   │   └── NotFoundPage.jsx
+│   ├── utils/
+│   │   └── localCache.js
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
 ├── .gitignore
 ├── package.json
 ├── README.md
